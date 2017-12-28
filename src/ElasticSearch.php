@@ -7,7 +7,7 @@ namespace Codeception\Module;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module;
-use Elasticsearch\Client;
+use Elasticsearch\ClientBuilder;
 
 class ElasticSearch extends Module
 {
@@ -16,23 +16,22 @@ class ElasticSearch extends Module
      */
     private $elasticSearch;
 
-    public function __construct($config = null)
+    public function __construct(ModuleContainer $moduleContainer, $config = null)
     {
-        if (!isset($config['hosts'])) {
-            throw new \Exception('please configure hosts for ElasticSearch codeception module');
+        if (!isset($config['dsn'])) {
+            throw new \Exception('please configure dsn for ElasticSearch codeception module');
         }
 
-        if (isset($config['hosts']) && !is_array($config['hosts'])) {
-            $config['hosts'] = array($config['hosts']);
-        }
-        $this->config = (array)$config;
+        $this->config = $config;
 
-        parent::__construct();
+        parent::__construct($moduleContainer, $config);
     }
 
     public function _initialize()
     {
-        $this->elasticSearch = new Client($this->config);
+        $this->elasticSearch = ClientBuilder::create()
+            ->setHosts([$this->config['dsn']])
+            ->build();
     }
 
     /**
